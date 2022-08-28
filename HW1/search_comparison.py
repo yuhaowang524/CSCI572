@@ -1,3 +1,8 @@
+# name: Yuhao Wang
+# student ID: 5779881695
+# CSCI 572 HW1
+
+import json
 from bs4 import BeautifulSoup
 import time
 import requests
@@ -10,17 +15,18 @@ USER_AGENT = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKi
 class SearchEngine:
     @staticmethod
     def search(query, sleep=True):
-        if sleep: # Prevents loading too many pages too soon
+        if sleep:  # Prevents loading too many pages too soon
             time.sleep(randint(10, 100))
-        temp_url = '+'.join(query.split()) #for adding + between words for the query
-        url = 'SEARCHING_URL' + temp_url
+        temp_url = '+'.join(query.split())  # for adding + between words for the query
+        # using DuckDuckGo
+        url = 'https://www.duckduckgo.com/html/?q=' + temp_url
         soup = BeautifulSoup(requests.get(url, headers=USER_AGENT).text, "html.parser")
         new_results = SearchEngine.scrape_search_result(soup)
         return new_results
 
     @staticmethod
     def scrape_search_result(soup):
-        raw_results = soup.find_all("SEARCH SELECTOR")
+        raw_results = soup.find_all("a", attrs={"class": "result__a"})  # using DuckDuckGo
         results = []
         #implement a check to get only 10 results and also check that URLs must not be duplicated
         for result in raw_results:
@@ -34,7 +40,10 @@ def read_queries():
         queries = f.readlines()
     return queries
 
-
+def read_google_result():
+    with open("data/Google_Result4.json", "r") as j:
+        result = json.load(j)
+    return result
 
 def main():
 
