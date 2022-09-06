@@ -78,7 +78,7 @@ def task_two_helper(queries, duckduckgo_result, google_result):
         query = query.rstrip()
         match_url = find_same_query(query, duckduckgo_result, google_result)
         overlapping_results = len(match_url)
-        percent_overlap = len(match_url) / 10
+        percent_overlap = (len(match_url) / 10) * 100
         rho = calculate_spearmans_rho(match_url)
         stat_ret[count] = [overlapping_results, percent_overlap, rho]
     return stat_ret
