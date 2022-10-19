@@ -35,4 +35,38 @@ public class InvertedIndexBigrams {
             }
         }
     }
+
+
+    public static class IndexCountReducer extends Reducer<Text, Text, Text, Text> {
+        private Text ret = new Text();
+
+        public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+            HashMap<String, Integer> documentMap = new HashMap<>();
+            for (Text val : values) {
+                String documentID = val.toString();
+                documentMap.put(documentID, documentMap.getOrDefault(documentID, 0) + 1);
+            }
+            StringBuilder str = new StringBuilder();
+            for (String documentID : documentMap.keySet()) {
+                str.append(documentID).append(":").append(documentMap.get(documentID)).append("\t");
+            }
+            ret.set(str.substring(0, str.length() - 1));
+            context.write(key, ret);
+        }
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "Inverted Index Bigrams");
+        job.setJarByClass(InvertedIndexBigrams.class);
+        job.setMapperClass(InvertedIndexBigrams.TokenizerMapper.class);
+        job.setReducerClass(InvertedIndexBigrams.IndexCountReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(Text.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+
 }
