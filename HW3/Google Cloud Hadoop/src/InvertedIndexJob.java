@@ -17,16 +17,14 @@ public class InvertedIndexJob {
         private Text documentID = new Text();
 
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-            String[] document = value.toString().split("\t", 2);
+            String[] documents = value.toString().split("\t", 2);
             // convert all the words to the lowercase
-            String text = document[1].toLowerCase();
+            String text = documents[1].toLowerCase();
             // Replace all the occurrences of special characters and numerals by space character
             text = text.replaceAll("[^a-z\\s]", " ");
             text = text.replaceAll("\\s+", " ");
-
-            documentID.set(document[0]);
+            documentID.set(documents[0]);
             StringTokenizer tokenizer = new StringTokenizer(text);
-
             while (tokenizer.hasMoreTokens()) {
                 word.set(tokenizer.nextToken());
                 context.write(word, documentID);
@@ -44,10 +42,9 @@ public class InvertedIndexJob {
                 String documentID = val.toString();
                 documentMap.put(documentID, documentMap.getOrDefault(documentID, 0) + 1);
             }
-
             StringBuilder str = new StringBuilder();
             for (String documentID : documentMap.keySet()) {
-                str.append(documentID).append(":").append(documentMap.get(documentID)).append(" ");
+                str.append(documentID).append(":").append(documentMap.get(documentID)).append("\t");
             }
             ret.set(str.substring(0, str.length() - 1));
             context.write(key, ret);
