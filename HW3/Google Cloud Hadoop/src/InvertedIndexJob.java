@@ -9,6 +9,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 public class InvertedIndexJob {
@@ -36,17 +37,22 @@ public class InvertedIndexJob {
     public static class IndexCountReducer extends Reducer<Text, Text, Text, Text> {
         private Text ret = new Text();
 
-        public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+        public void reduce(Text key, Iterable<Text> documentIDs, Context context) throws IOException, InterruptedException {
             HashMap<String, Integer> documentMap = new HashMap<>();
-            for (Text val : values) {
-                String documentID = val.toString();
+            for (Text docID : documentIDs) {
+                String documentID = docID.toString();
                 documentMap.put(documentID, documentMap.getOrDefault(documentID, 0) + 1);
             }
             StringBuilder str = new StringBuilder();
-            for (String documentID : documentMap.keySet()) {
-                str.append(documentID).append(":").append(documentMap.get(documentID)).append("\t");
+            for (Map.Entry<String, Integer> entry : documentMap.entrySet()) {
+                if (str.length() > 0) {
+                    str.append(" ");
+                }
+                String docuID = entry.getKey();
+                int count = entry.getValue();
+                str.append(docuID).append(":").append(count);
             }
-            ret.set(str.substring(0, str.length() - 1));
+            ret.set(str.toString());
             context.write(key, ret);
         }
     }
